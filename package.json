@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/Istine/crimereportbackend/issues"
   },
-  "homepage": "https://github.com/Istine/crimereportbackend#readme"
+  "homepage": "https://github.com/Istine/crimereportbackend#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }

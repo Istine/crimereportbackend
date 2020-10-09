@@ -9,6 +9,7 @@ const validate = (req, res, next) => {
     if (email && password) {
       checkUser(email, password).then((results) => {
         req.user = results
+        req.session.errors = null
         next();
         return;
       });

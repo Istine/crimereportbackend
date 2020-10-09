@@ -19,6 +19,18 @@ const checkUser = (email, password) => {
   });
 };
 
+const allUsers = () => {
+  return new Promise((resolve, reject) => {
+    pool.query(
+      "SELECT * FROM users",
+      (err, results) => {
+        if (err) reject(err.message);
+        resolve(results.rows);
+      }
+    );
+  });
+};
+
 const createUser = (data) => {
   const { first_name, last_name, email, password, trackingid } = data;
   return new Promise((resolve, reject) => {
@@ -36,4 +48,5 @@ const createUser = (data) => {
 module.exports = {
   checkUser,
   createUser,
+  allUsers
 };

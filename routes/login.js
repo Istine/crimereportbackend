@@ -3,8 +3,10 @@ const router = express.Router()
 const { validate } = require("../middleware/authentication")
 
 router.post("/", validate,  (req, res) => {
+    const {user} = req
     res.status(200).json({
-        message:"Welcome"
+        user:user,
+        message:"Welcome!.."
     })
 })
 

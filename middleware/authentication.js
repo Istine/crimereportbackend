@@ -1,14 +1,17 @@
 //import modules
 const fs = require("fs");
 const path = require("path");
+const { checkUser } = require("../db/queries");
 
 const validate = (req, res, next) => {
   try {
     const { email, password } = req.body;
     if (email && password) {
-      console.log(email, password);
-      next();
-      return;
+      checkUser(email, password).then((results) => {
+        req.user = results
+        next();
+        return;
+      });
     } else {
       let logs = {
         ip_address: req.connection.remoteAddress || req.socket.remoteAddress,
@@ -51,14 +54,18 @@ const siginup = (req, res, next) => {
         message: "Error Signing up this user..",
       };
       logger(logs);
-      return res.status(400).json({ message: "Problem encountered.. Some required fields are missing.." });
+      return res
+        .status(400)
+        .json({
+          message: "Problem encountered.. Some required fields are missing..",
+        });
     }
     next();
-    return
+    return;
   } catch (err) {
     let logs = {
       ip_address: req.connection.remoteAddress || req.socket.remoteAddress,
-      message: err
+      message: err,
     };
     logger(logs);
   }
@@ -67,5 +74,5 @@ const siginup = (req, res, next) => {
 module.exports = {
   validate,
   logger,
-  siginup
+  siginup,
 };

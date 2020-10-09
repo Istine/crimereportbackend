@@ -6,13 +6,16 @@ const pool = new Pool({
   password: process.env.PASSWORD,
   port: process.env.PORT,
 });
-const fetchUsers = () => {
+const checkUser = (email, password) => {
   return new Promise((resolve, reject) => {
-    pool.query("SELECT * FROM users", (err, results) => {
-      if (err) reject(err.message);
-      console.log(results.rows);
-      resolve(results.rows);
-    });
+    pool.query(
+      "SELECT email, password FROM users WHERE email = $1 AND password = $2",
+      [email, password],
+      (err, results) => {
+        if (err) reject(err.message);
+        resolve(results.rows[0]);
+      }
+    );
   });
 };
 
@@ -31,6 +34,6 @@ const createUser = (data) => {
 };
 
 module.exports = {
-  fetchUsers,
+  checkUser,
   createUser,
 };

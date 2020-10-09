@@ -1,10 +1,10 @@
 const express = require("express")
 const router = express.Router()
-const { validate } = require("../middleware/authentication")
+const { siginup } = require("../middleware/authentication")
 
-router.post("/", validate,  (req, res) => {
+router.post("/", siginup, (req, res) => {
     res.status(200).json({
-        message:"Welcome"
+        message:"Sign up successful.. Welcome!"
     })
 })
 

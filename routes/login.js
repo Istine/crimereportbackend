@@ -8,6 +8,7 @@ router.post("/", validate, (req, res) => {
     const {user} = req
     res.cookie("user_session", req.session.cookie)
     res.setHeader('content-type', 'application/json')
+    console.log(req.session.cookie)
     res.status(200).json({
         user:user,
         message:"Welcome!.."

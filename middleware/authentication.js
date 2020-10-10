@@ -71,35 +71,53 @@ const siginup = (req, res, next) => {
   }
 };
 
-const isSessionExpired = (dbresults) => {
+const isSessionExpired = (req) => {
+  try {
+    if (
+      new Date(Date.now() + 3600000) > new Date(req.session.cookie._expires)
+    ) {
+      req.session.destroy(function(err) {
+        if(err) throw err
+        return
+      });
+      return false;
+    }
 
-}
+    return true;
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 const isAuthorized = (req, res, next) => {
-  if (req.session && req.sessionID) {
-    findSessionById(req.sessionID)
-      .then((results) => {
-        if (results.length > 0 && results[0].sess.email == req.session.email) {
-          //authorized
-          console.log(`${results[0].sess.email} is authorized`)
-          next();
-        }
-        else {
-          // unauthorized
-          res.status(401).json({
-            message: "This user is Unauthorized",
-          });      
-        }
-      })
-      .catch((error) => {
-        console.log(error);
+  try {
+    if (req.session && req.sessionID && isSessionExpired(req)) {
+      findSessionById(req.sessionID)
+        .then((results) => {
+          if (
+            results.length > 0 &&
+            results[0].sess.email == req.session.email
+          ) {
+            //authorized
+            console.log(`${results[0].sess.email} is authorized`);
+            next();
+          } else {
+            // unauthorized
+            res.status(401).json({
+              message: "This user is Unauthorized",
+            });
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } else {
+      // unauthorized
+      res.status(401).json({
+        message: "Expired session",
       });
-  } else {
-    // unauthorized
-    res.status(401).json({
-      message: "Expired session",
-    });
-  }
+    }
+  } catch (error) {}
 };
 
 module.exports = {

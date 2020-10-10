@@ -1,6 +1,8 @@
 const express = require("express")
 const router = express.Router()
-const { validate } = require("../middleware/authentication")
+const { validate, isAuthorized } = require("../middleware/authentication")
+const { allUsers } = require('../db/queries')
+
 
 router.post("/", validate, (req, res) => {
     const {user} = req
@@ -9,6 +11,14 @@ router.post("/", validate, (req, res) => {
     res.status(200).json({
         user:user,
         message:"Welcome!.."
+    })
+})
+
+router.get('/users', isAuthorized, (req, res) => {
+    allUsers().then(results => {
+        res.status(200).json({
+            results: results
+        })
     })
 })
 

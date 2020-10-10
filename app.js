@@ -21,7 +21,6 @@ const pgPool = new pg.Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
-
 // set up express-session and storing it in postgres database
 app.use(
   session({
@@ -33,7 +32,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1000, //30 days
+      maxAge: 30 * 24 * 60 * 60 * 1.4, //30 days
       httpOnly: true,
     },
   })

@@ -1,15 +1,16 @@
 //import modules
 const fs = require("fs");
 const path = require("path");
-const { checkUser } = require("../db/queries");
+const { checkUser, findSessionById } = require("../db/queries");
 
 const validate = (req, res, next) => {
   try {
     const { email, password } = req.body;
     if (email && password) {
       checkUser(email, password).then((results) => {
-        req.user = results
-        req.session.errors = null
+        req.user = results;
+        req.session.errors = null;
+        req.session.email = email;
         next();
         return;
       });
@@ -55,11 +56,9 @@ const siginup = (req, res, next) => {
         message: "Error Signing up this user..",
       };
       logger(logs);
-      return res
-        .status(400)
-        .json({
-          message: "Problem encountered.. Some required fields are missing..",
-        });
+      return res.status(400).json({
+        message: "Problem encountered.. Some required fields are missing..",
+      });
     }
     next();
     return;
@@ -72,8 +71,40 @@ const siginup = (req, res, next) => {
   }
 };
 
+const isSessionExpired = (dbresults) => {
+
+}
+
+const isAuthorized = (req, res, next) => {
+  if (req.session && req.sessionID) {
+    findSessionById(req.sessionID)
+      .then((results) => {
+        if (results.length > 0 && results[0].sess.email == req.session.email) {
+          //authorized
+          console.log(`${results[0].sess.email} is authorized`)
+          next();
+        }
+        else {
+          // unauthorized
+          res.status(401).json({
+            message: "This user is Unauthorized",
+          });      
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  } else {
+    // unauthorized
+    res.status(401).json({
+      message: "Expired session",
+    });
+  }
+};
+
 module.exports = {
   validate,
   logger,
   siginup,
+  isAuthorized,
 };

@@ -45,8 +45,20 @@ const createUser = (data) => {
   });
 };
 
+const findSessionById = (sessionID) => {
+  return new Promise((resolve, reject) => {
+    pool.query(
+      'SELECT * FROM user_sessions WHERE sid = $1', [sessionID], (err, results) => {
+        if(err) reject(results)
+        resolve(results.rows)
+      }
+    )
+  })
+}
+
 module.exports = {
   checkUser,
   createUser,
-  allUsers
+  allUsers,
+  findSessionById
 };

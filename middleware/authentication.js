@@ -7,13 +7,27 @@ const validate = (req, res, next) => {
   try {
     const { email, password } = req.body;
     if (email && password) {
-      checkUser(email, password).then((results) => {
-        req.user = results;
-        req.session.errors = null;
-        req.session.email = email;
-        next();
-        return;
-      });
+      checkUser(email, password)
+        .then((results) => {
+          if (results.length > 0) {
+            req.user = results;
+            req.session.errors = null;
+            req.session.email = email;
+            next();
+            return;
+          } else {
+            return res.status(401).json({
+              message: "No user found",
+            });
+          }
+
+          return;
+        })
+        .catch((err) => {
+          return res.status(500).json({
+            message: "error when fecthing details",
+          });
+        });
     } else {
       let logs = {
         ip_address: req.connection.remoteAddress || req.socket.remoteAddress,
@@ -76,9 +90,9 @@ const isSessionExpired = (req) => {
     if (
       new Date(Date.now() + 3600000) > new Date(req.session.cookie._expires)
     ) {
-      req.session.destroy(function(err) {
-        if(err) throw err
-        return
+      req.session.destroy(function (err) {
+        if (err) throw err;
+        return;
       });
       return false;
     }

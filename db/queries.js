@@ -13,7 +13,7 @@ const checkUser = (email, password) => {
       [email, password],
       (err, results) => {
         if (err) reject(err.message);
-        resolve(results.rows[0]);
+        resolve(results.rows);
       }
     );
   });

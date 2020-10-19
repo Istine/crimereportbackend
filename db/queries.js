@@ -39,7 +39,7 @@ const createUser = (data) => {
       [first_name, last_name, email, password, trackingid],
       (err, results) => {
         if (err) reject(err.message);
-        resolve(results.row);
+        resolve();
       }
     );
   });

@@ -2,12 +2,15 @@
 const fs = require("fs");
 const path = require("path");
 const { checkUser, findSessionById } = require("../db/queries");
+const crypto = require('crypto')
+
 
 const validate = (req, res, next) => {
   try {
     const { email, password } = req.body;
+    console.log(email, password)
     if (email && password) {
-      checkUser(email, password)
+      checkUser(email, encryptPassword(password))
         .then((results) => {
           if (results.length > 0) {
             req.user = results;
@@ -90,6 +93,7 @@ const isSessionExpired = (req) => {
     if (
       new Date(Date.now() + 3600000) > new Date(req.session.cookie._expires)
     ) {
+      req.user = null
       req.session.destroy(function (err) {
         if (err) throw err;
         return;
@@ -134,9 +138,18 @@ const isAuthorized = (req, res, next) => {
   } catch (error) {}
 };
 
+//function to encrypt password
+const encryptPassword = (password) => {
+  const hash_pass = crypto.createHmac("SHA256", process.env.HASH_PASSWORD)
+  .update(password)
+  .digest('hex')
+  return hash_pass
+}
+
 module.exports = {
   validate,
   logger,
   siginup,
   isAuthorized,
+  encryptPassword,
 };

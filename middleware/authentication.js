@@ -8,7 +8,6 @@ const crypto = require('crypto')
 const validate = (req, res, next) => {
   try {
     const { email, password } = req.body;
-    console.log(email, password)
     if (email && password) {
       checkUser(email, encryptPassword(password))
         .then((results) => {
@@ -100,7 +99,6 @@ const isSessionExpired = (req) => {
       });
       return false;
     }
-
     return true;
   } catch (error) {
     console.log(error);
@@ -117,11 +115,11 @@ const isAuthorized = (req, res, next) => {
             results[0].sess.email == req.session.email
           ) {
             //authorized
-            console.log(`${results[0].sess.email} is authorized`);
             next();
+            return
           } else {
             // unauthorized
-            res.status(401).json({
+           return res.status(401).json({
               message: "This user is Unauthorized",
             });
           }

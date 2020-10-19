@@ -32,7 +32,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1.45, //30 days
+      maxAge: 30 * 24 * 60 * 60 * 1000, //30 days
       httpOnly: true,
     },
   })
@@ -40,7 +40,7 @@ app.use(
 
 app.use("/login", require("./routes/login"));
 app.use("/signup", require("./routes/signup"));
-
+app.use('/portal', require('./routes/portal'))
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
 });

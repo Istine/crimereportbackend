@@ -1,5 +1,5 @@
 const { Pool } = require("pg");
-const format = require('pg-format')
+const format = require("pg-format");
 const pool = new Pool({
   user: process.env.USER,
   host: process.env.HOST,
@@ -74,18 +74,32 @@ const createReport = (data) => {
 
 const saveFileLocation = async (data) => {
   try {
-    let query = format(`INSERT INTO files (location, file_id) VALUES %L returning id`, data)
-    const res = await pool.query(
-      query,
-      (err, results) => {
-        if (err) throw err;
-        return results;
-      }
+    let query = format(
+      `INSERT INTO files (location, file_id) VALUES %L returning id`,
+      data
     );
+    const res = await pool.query(query, (err, results) => {
+      if (err) throw err;
+      return results;
+    });
     return res;
   } catch (err) {
     console.log(err);
   }
+};
+
+const fetchCasesByEmail = async (email) => {
+  return new Promise((resolve, reject) => {
+    pool.query(
+      ` SELECT * FROM cases, files WHERE case_id=file_id AND plaintiff = $1`,
+      [email],
+      (err, results) => {
+        if(err) reject(err)
+        resolve(results)
+      }
+    )
+  })
+  
 };
 
 module.exports = {
@@ -95,4 +109,5 @@ module.exports = {
   findSessionById,
   createReport,
   saveFileLocation,
+  fetchCasesByEmail,
 };

@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const { isAuthorized } = require('../middleware/authentication')
-const { reportHandler } = require('../middleware/utils')
+const { reportHandler, getUserCases } = require('../middleware/utils')
 const multer = require('multer')
 const path = require('path')
 
@@ -27,10 +27,11 @@ router.post('/report', isAuthorized, upload.array('images'), reportHandler, (req
     })
 })
 
-router.post('/upload', upload.array('images'), (req, res) => {  
-    res.status(200).json({
-        message:"upload"
-    })
+router.get('/cases', isAuthorized, getUserCases, (req, res) => {
+  res.status(200).json({
+    message: "success!",
+    cases: req.cases
+  })
 })
 
 module.exports = router

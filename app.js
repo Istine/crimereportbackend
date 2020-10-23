@@ -21,6 +21,7 @@ const pgPool = new pg.Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
+app.use(express.static('uploads'))
 // set up express-session and storing it in postgres database
 app.use(
   session({

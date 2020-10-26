@@ -94,12 +94,11 @@ const fetchCasesByEmail = (email) => {
       ` SELECT * FROM cases, files WHERE case_id=file_id AND plaintiff = $1`,
       [email],
       (err, results) => {
-        if(err) reject(err)
-        resolve(results)
+        if (err) reject(err);
+        resolve(results);
       }
-    )
-  })
-  
+    );
+  });
 };
 
 //UPDATE CASES BY ID
@@ -109,70 +108,98 @@ const updateCaseById = (data) => {
       `UPDATE cases SET plaintiff = $1, complaint = $2, offender = $3  WHERE case_id= $4`,
       data,
       (err, results) => {
-        if(err) reject(err)
-        resolve(results)
+        if (err) reject(err);
+        resolve(results);
       }
-    )
-  })
-}
+    );
+  });
+};
 
 const deleteCaseById = (id) => {
   return new Promise((resolve, reject) => {
-    pool.query(
-      `DELETE FROM cases WHERE case_id = $1`,
-      [id],
-      (err, results) => {
-        if(err) reject(err)
-        resolve(results)
-      }
-    )
-  })
-}
+    pool.query(`DELETE FROM cases WHERE case_id = $1`, [id], (err, results) => {
+      if (err) reject(err);
+      resolve(results);
+    });
+  });
+};
 
 const deleteAllFiles = (id) => {
   return new Promise((resolve, reject) => {
-    pool.query(
-      `DELETE FROM files WHERE file_id = $1`,
-      [id],
-      (err, results) => {
-        if(err) reject(err)
-        resolve(results)
-      }
-    )
-  })
-}
+    pool.query(`DELETE FROM files WHERE file_id = $1`, [id], (err, results) => {
+      if (err) reject(err);
+      resolve(results);
+    });
+  });
+};
 
 const deleteFileByName = (data) => {
   return new Promise((resolve, reject) => {
-    pool.query(`
+    pool.query(
+      `
       DELETE FROM files WHERE file_id = $1 AND location = $2`,
       data,
-      (err, results)=> {
-        if(err) reject(err)
-        resolve(results)
+      (err, results) => {
+        if (err) reject(err);
+        resolve(results);
       }
-    )
-  })
-}
+    );
+  });
+};
 
 const getFileNamesFromDB = async (id) => {
   return new Promise((resolve, reject) => {
-    pool.query(`SELECT location from files WHERE file_id= $1`, [id], (err, results) => {
-      if(err) reject(err)
-      resolve(results.rows)
-    })
-  })
-}
+    pool.query(
+      `SELECT location from files WHERE file_id= $1`,
+      [id],
+      (err, results) => {
+        if (err) reject(err);
+        resolve(results.rows);
+      }
+    );
+  });
+};
 
 const updateProfilePic = (data) => {
   return new Promise((resolve, reject) => {
-    pool.query(`UPDATE users SET profile_picture = $1 WHERE email = $2`, 
-    data, (err, results) => {
-      if(err) reject(err)
-      resolve(results)
-    })
-  })
-}
+    pool.query(
+      `UPDATE users SET profile_picture = $1 WHERE email = $2`,
+      data,
+      (err, results) => {
+        if (err) reject(err);
+        resolve(results);
+      }
+    );
+  });
+};
+
+//Helper function to generate format for sql command
+const sqlFormat = (keys) => {
+  let sql = "";
+  keys.forEach((key, index) => {
+    if(index === keys.length - 1) {
+    sql += key + " =$" + (index + 1).toString() + " ";
+    }
+    else {
+    sql += key + " =$" + (index + 1).toString() + ", ";
+    }
+  });
+  return sql;
+};
+const updateProfileDetails = (data) => {
+  const sql =
+    "UPDATE users SET " +
+    sqlFormat(Object.keys(data.object))
+    +"WHERE email=$" +
+    data.values.length;
+    console.log(sql)
+  return new Promise((resolve, reject) => {
+    pool.query(sql, data.values, (err, results) => {
+      if (err) reject(err);
+      resolve(results);
+    });
+  });
+};
 
 module.exports = {
   checkUser,
@@ -188,4 +215,5 @@ module.exports = {
   deleteAllFiles,
   getFileNamesFromDB,
   updateProfilePic,
+  updateProfileDetails,
 };

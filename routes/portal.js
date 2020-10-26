@@ -8,7 +8,8 @@ const {
   updateFiles,
   deleteFile,
   deleteCase,
-  uploadProfilePicture
+  uploadProfilePicture,
+  updateProfileData
 } = require("../middleware/utils");
 const multer = require("multer");
 const path = require("path");
@@ -101,6 +102,13 @@ router.delete("/delete-file", isAuthorized, deleteFile, (req, res) => {
 });
 module.exports = router;
 
+
+//UPDATE PROFILE INFORMATION
+router.put('/update-profile',isAuthorized, updateProfileData, (req, res) => {
+  res.status(200).json({
+    message:"profile updated!."
+  })
+})
 
 //ADD PROFILE PICTURE
 router.put('/profile-picture', isAuthorized, profileUpload.single('image'), uploadProfilePicture, (req, res) => {

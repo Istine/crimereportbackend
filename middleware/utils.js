@@ -10,7 +10,8 @@ const {
   deleteCaseById,
   deleteAllFiles,
   getFileNamesFromDB,
-  updateProfilePic
+  updateProfilePic,
+  updateProfileDetails,
 } = require("../db/queries");
 const path = require("path");
 const fs = require("fs");
@@ -114,11 +115,14 @@ const updateFiles = (req, res, next) => {
 const deleteFilesFromDIR = async (id) => {
   try {
     const response = await getFileNamesFromDB(id);
-    if(response.length > 0) {
-      response.forEach(file => {
-        fs.unlink(path.join(__dirname, '/../uploads/' + file.location), (err) => {
-          if(err) throw err
-        })
+    if (response.length > 0) {
+      response.forEach((file) => {
+        fs.unlink(
+          path.join(__dirname, "/../uploads/" + file.location),
+          (err) => {
+            if (err) throw err;
+          }
+        );
       });
     }
     return;
@@ -195,37 +199,65 @@ const deleteFile = (req, res, next) => {
 };
 
 //FUNCTION TO GET FILE NAME PP = PROFILE PICTURE
-const getPPFileName = (fileObj) =>{
-  if(fileObj) {
-    return fileObj.filename   
+const getPPFileName = (fileObj) => {
+  if (fileObj) {
+    return fileObj.filename;
   }
-}
+};
 
 //FUNCTION TO UPDATE PROFILE PICTURE TO DATABASE
-const uploadProfilePicture = (req, res, next)  => {
-  try{
-    const filename = getPPFileName(req.file)
-    if(!filename) return res.status(400).json({
-      message:"Please Select a file"
-    })
-    const data = [filename, req.session.email]
+const uploadProfilePicture = (req, res, next) => {
+  try {
+    const filename = getPPFileName(req.file);
+    if (!filename)
+      return res.status(400).json({
+        message: "Please Select a file",
+      });
+    const data = [filename, req.session.email];
     updateProfilePic(data)
-    .then(success => {
-      next()
-    })    
-    .catch(err => {
-      return res.status(500).json({
-        message:"failed to update profile picture. Please try again."
+      .then((success) => {
+        next();
       })
-    })
-  }
-  catch(err) {
-    console.log(err)
+      .catch((err) => {
+        return res.status(500).json({
+          message: "failed to update profile picture. Please try again.",
+        });
+      });
+  } catch (err) {
+    console.log(err);
     return res.status(500).json({
-      message:"Something went wrong!"
-    })
+      message: "Something went wrong!",
+    });
   }
-} 
+};
+
+const updateProfileData = (req, res, next) => {
+  try {
+    
+    let values = Object.values(req.body)
+    values.push(req.session.email)
+    const data = {
+      object: req.body,
+      values,
+    };
+    if (values) {
+      updateProfileDetails(data)
+        .then((success) => {
+          next();
+          return
+        })
+        .catch((err) => {
+          return res.status(500).json({
+            message: "Problem Updating records. Please try again",
+          });
+        });
+    }
+  } catch (err) {
+    return res.status(500).json({
+      message: "Something went wrong. Please try again",
+    });
+  }
+};
 
 module.exports = {
   reportHandler,
@@ -235,4 +267,5 @@ module.exports = {
   deleteCase,
   deleteFile,
   uploadProfilePicture,
+  updateProfileData,
 };

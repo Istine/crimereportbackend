@@ -116,6 +116,19 @@ const updateCaseById = (data) => {
   })
 }
 
+const deleteFileByName = (data) => {
+  return new Promise((resolve, reject) => {
+    pool.query(`
+      DELETE FROM files WHERE file_id = $1 AND location = $2`,
+      data,
+      (err, results)=> {
+        if(err) reject(err)
+        resolve(results)
+      }
+    )
+  })
+}
+
 module.exports = {
   checkUser,
   createUser,
@@ -125,4 +138,5 @@ module.exports = {
   saveFileLocation,
   fetchCasesByEmail,
   updateCaseById,
+  deleteFileByName
 };

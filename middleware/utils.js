@@ -6,10 +6,12 @@ const {
   saveFileLocation,
   fetchCasesByEmail,
   updateCaseById,
+  deleteFileByName,
 } = require("../db/queries");
 const path = require("path");
 const fs = require("fs");
 
+//FUNCTION FOR GETTING FILE NAMES
 const getFileNames = (files, file_id) => {
   const filenames = files.map((file) => {
     return [file.filename, file_id];
@@ -65,6 +67,7 @@ const getUserCases = (req, res, next) => {
     });
 };
 
+//FUNCTION TO UPDATE CASE
 const updateCase = (req, res, next) => {
   const { plaintiff, complaint, offender, case_id } = req.body;
   if (!plaintiff || !complaint || !offender || !case_id) {
@@ -74,38 +77,75 @@ const updateCase = (req, res, next) => {
   } else {
     const data = [plaintiff, complaint, offender, case_id];
     updateCaseById(data)
-    .then(result =>{
-      next()
-    })
-    .catch(err => {
-      console.log(err)
-      return res.status(500).json({
-        message:"Something went wrong!"
+      .then((result) => {
+        next();
       })
-    })
+      .catch((err) => {
+        console.log(err);
+        return res.status(500).json({
+          message: "Something went wrong!",
+        });
+      });
   }
 };
 
+// FUNCTION TO UPDATE FILES
 const updateFiles = (req, res, next) => {
   if (req.files) {
-    const {case_id} = req.body
+    const { case_id } = req.body;
     saveFileLocation(getFileNames(req.files, case_id))
       .then((count) => {
         next();
         return;
       })
       .catch((err) => console.log(err));
-  }
-  else {
+  } else {
     return res.status(200).json({
-      message:"Np update made."
-    })
-  }  
-}
+      message: "Np update made.",
+    });
+  }
+};
+
+//FUNCTION TO DELETE FILE
+const deleteFile = (req, res, next) => {
+  try {
+    const { file_id, file_name } = req.body;
+    if (!file_id || !file_name) {
+      return res.status(400).json({
+        message: "Please fill in all fields.",
+      });
+    }
+    const data = [file_id, file_name];
+    deleteFileByName(data)
+      .then((result) => {
+        fs.unlink(path.join(__dirname, "/../uploads/" + file_name), (err) => {
+          if (err) {
+            return res.status(500).json({
+              message: "file cannot be deleted!",
+            });
+          }
+          next();
+          return;
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+        return res.status(500).json({
+          message: "Something went wrong! Plese try again",
+        });
+      });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      message: "Something went wrong",
+    });
+  }
+};
 
 module.exports = {
   reportHandler,
   getUserCases,
   updateCase,
   updateFiles,
+  deleteFile,
 };

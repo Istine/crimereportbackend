@@ -164,6 +164,16 @@ const getFileNamesFromDB = async (id) => {
   })
 }
 
+const updateProfilePic = (data) => {
+  return new Promise((resolve, reject) => {
+    pool.query(`UPDATE users SET profile_picture = $1 WHERE email = $2`, 
+    data, (err, results) => {
+      if(err) reject(err)
+      resolve(results)
+    })
+  })
+}
+
 module.exports = {
   checkUser,
   createUser,
@@ -177,4 +187,5 @@ module.exports = {
   deleteFileByName,
   deleteAllFiles,
   getFileNamesFromDB,
+  updateProfilePic,
 };

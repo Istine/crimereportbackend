@@ -10,6 +10,7 @@ const {
   deleteCaseById,
   deleteAllFiles,
   getFileNamesFromDB,
+  updateProfilePic
 } = require("../db/queries");
 const path = require("path");
 const fs = require("fs");
@@ -193,6 +194,39 @@ const deleteFile = (req, res, next) => {
   }
 };
 
+//FUNCTION TO GET FILE NAME PP = PROFILE PICTURE
+const getPPFileName = (fileObj) =>{
+  if(fileObj) {
+    return fileObj.filename   
+  }
+}
+
+//FUNCTION TO UPDATE PROFILE PICTURE TO DATABASE
+const uploadProfilePicture = (req, res, next)  => {
+  try{
+    const filename = getPPFileName(req.file)
+    if(!filename) return res.status(400).json({
+      message:"Please Select a file"
+    })
+    const data = [filename, req.session.email]
+    updateProfilePic(data)
+    .then(success => {
+      next()
+    })    
+    .catch(err => {
+      return res.status(500).json({
+        message:"failed to update profile picture. Please try again."
+      })
+    })
+  }
+  catch(err) {
+    console.log(err)
+    return res.status(500).json({
+      message:"Something went wrong!"
+    })
+  }
+} 
+
 module.exports = {
   reportHandler,
   getUserCases,
@@ -200,4 +234,5 @@ module.exports = {
   updateFiles,
   deleteCase,
   deleteFile,
+  uploadProfilePicture,
 };

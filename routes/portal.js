@@ -7,7 +7,8 @@ const {
   updateCase,
   updateFiles,
   deleteFile,
-  deleteCase
+  deleteCase,
+  uploadProfilePicture
 } = require("../middleware/utils");
 const multer = require("multer");
 const path = require("path");
@@ -23,6 +24,19 @@ let storage = multer.diskStorage({
   },
 });
 const upload = multer({ storage });
+
+//separate profile store for multer
+let profilePicStore = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, '/../profilepics'))
+  },
+
+  filename: function (req, file, cb) {
+    cb(null, 'PP' + Date.now() + path.extname(file.originalname))
+  }
+})
+
+const profileUpload = multer({storage:profilePicStore})
 
 //DASHBOARD ROUTE
 router.get("/dashboard", isAuthorized, (req, res) => {
@@ -86,3 +100,11 @@ router.delete("/delete-file", isAuthorized, deleteFile, (req, res) => {
   });
 });
 module.exports = router;
+
+
+//ADD PROFILE PICTURE
+router.put('/profile-picture', isAuthorized, profileUpload.single('image'), uploadProfilePicture, (req, res) => {
+  res.status(200).json({
+    message:"picture uploaded"
+  })
+})

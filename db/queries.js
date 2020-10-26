@@ -116,6 +116,32 @@ const updateCaseById = (data) => {
   })
 }
 
+const deleteCaseById = (id) => {
+  return new Promise((resolve, reject) => {
+    pool.query(
+      `DELETE FROM cases WHERE case_id = $1`,
+      [id],
+      (err, results) => {
+        if(err) reject(err)
+        resolve(results)
+      }
+    )
+  })
+}
+
+const deleteAllFiles = (id) => {
+  return new Promise((resolve, reject) => {
+    pool.query(
+      `DELETE FROM files WHERE file_id = $1`,
+      [id],
+      (err, results) => {
+        if(err) reject(err)
+        resolve(results)
+      }
+    )
+  })
+}
+
 const deleteFileByName = (data) => {
   return new Promise((resolve, reject) => {
     pool.query(`
@@ -129,6 +155,15 @@ const deleteFileByName = (data) => {
   })
 }
 
+const getFileNamesFromDB = async (id) => {
+  return new Promise((resolve, reject) => {
+    pool.query(`SELECT location from files WHERE file_id= $1`, [id], (err, results) => {
+      if(err) reject(err)
+      resolve(results.rows)
+    })
+  })
+}
+
 module.exports = {
   checkUser,
   createUser,
@@ -138,5 +173,8 @@ module.exports = {
   saveFileLocation,
   fetchCasesByEmail,
   updateCaseById,
-  deleteFileByName
+  deleteCaseById,
+  deleteFileByName,
+  deleteAllFiles,
+  getFileNamesFromDB,
 };

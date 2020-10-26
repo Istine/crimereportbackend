@@ -7,6 +7,9 @@ const {
   fetchCasesByEmail,
   updateCaseById,
   deleteFileByName,
+  deleteCaseById,
+  deleteAllFiles,
+  getFileNamesFromDB,
 } = require("../db/queries");
 const path = require("path");
 const fs = require("fs");
@@ -106,6 +109,54 @@ const updateFiles = (req, res, next) => {
   }
 };
 
+//DELETE ALL FILES FROM FILE SYSTEM
+const deleteFilesFromDIR = async (id) => {
+  try {
+    const response = await getFileNamesFromDB(id);
+    if(response.length > 0) {
+      response.forEach(file => {
+        fs.unlink(path.join(__dirname, '/../uploads/' + file.location), (err) => {
+          if(err) throw err
+        })
+      });
+    }
+    return;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+//DELETE CASE
+const deleteCase = (req, res, next) => {
+  try {
+    const { case_id } = req.body;
+    if (!case_id) {
+      return res.status(400).json({
+        message: "missing required field.",
+      });
+    }
+    deleteCaseById(case_id).then((success) => {
+      if (success) {
+        deleteFilesFromDIR(case_id).then((res) => {
+          deleteAllFiles(case_id).then((success) => {
+            next();
+            return;
+          });
+        });
+      } else {
+        return res.status(500).json({
+          message: `could not delete files for this case! ${case_id}`,
+        });
+      }
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      message: "Something went wrong :( Please try again.",
+    });
+  }
+};
+
 //FUNCTION TO DELETE FILE
 const deleteFile = (req, res, next) => {
   try {
@@ -147,5 +198,6 @@ module.exports = {
   getUserCases,
   updateCase,
   updateFiles,
+  deleteCase,
   deleteFile,
 };

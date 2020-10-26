@@ -7,6 +7,7 @@ const {
   updateCase,
   updateFiles,
   deleteFile,
+  deleteCase
 } = require("../middleware/utils");
 const multer = require("multer");
 const path = require("path");
@@ -42,6 +43,13 @@ router.post(
     });
   }
 );
+
+//DELETE CASE
+router.delete('/delete-case', isAuthorized, deleteCase, (req, res) => {
+  res.status(200).json({
+    message:"case deleted!"
+  })
+})
 
 //GETTING ALL CASES
 router.get("/cases", isAuthorized, getUserCases, (req, res) => {

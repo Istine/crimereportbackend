@@ -5,6 +5,7 @@ const {
   createReport,
   saveFileLocation,
   fetchCasesByEmail,
+  updateCaseById,
 } = require("../db/queries");
 const path = require("path");
 const fs = require("fs");
@@ -51,9 +52,9 @@ const reportHandler = (req, res, next) => {
 //GET ALL CASES AND DETAILS RELATED TO PARTICULAR USER
 const getUserCases = (req, res, next) => {
   fetchCasesByEmail(req.session.email)
-    .then(({rows}) => {
+    .then(({ rows }) => {
       req.cases = rows;
-      console.log(rows)
+      console.log(rows);
       next();
       return;
     })
@@ -64,7 +65,29 @@ const getUserCases = (req, res, next) => {
     });
 };
 
+const updateCase = (req, res, next) => {
+  const { plaintiff, complaint, offender, case_id } = req.body;
+  if (!plaintiff || !complaint || !offender || !case_id) {
+    return res.status(400).json({
+      message: "Please fill in all fields.",
+    });
+  } else {
+    const data = [plaintiff, complaint, offender, case_id];
+    updateCaseById(data)
+    .then(result =>{
+      next()
+    })
+    .catch(err => {
+      console.log(err)
+      return res.status(500).json({
+        message:"Something went wrong!"
+      })
+    })
+  }
+};
+
 module.exports = {
   reportHandler,
   getUserCases,
+  updateCase
 };

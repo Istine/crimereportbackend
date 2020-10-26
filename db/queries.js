@@ -88,7 +88,7 @@ const saveFileLocation = async (data) => {
   }
 };
 
-const fetchCasesByEmail = async (email) => {
+const fetchCasesByEmail = (email) => {
   return new Promise((resolve, reject) => {
     pool.query(
       ` SELECT * FROM cases, files WHERE case_id=file_id AND plaintiff = $1`,
@@ -102,6 +102,20 @@ const fetchCasesByEmail = async (email) => {
   
 };
 
+//UPDATE CASES BY ID
+const updateCaseById = (data) => {
+  return new Promise((resolve, reject) => {
+    pool.query(
+      `UPDATE cases SET plaintiff = $1, complaint = $2, offender = $3  WHERE case_id= $4`,
+      data,
+      (err, results) => {
+        if(err) reject(err)
+        resolve(results)
+      }
+    )
+  })
+}
+
 module.exports = {
   checkUser,
   createUser,
@@ -110,4 +124,5 @@ module.exports = {
   createReport,
   saveFileLocation,
   fetchCasesByEmail,
+  updateCaseById,
 };

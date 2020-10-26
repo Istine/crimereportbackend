@@ -86,8 +86,26 @@ const updateCase = (req, res, next) => {
   }
 };
 
+const updateFiles = (req, res, next) => {
+  if (req.files) {
+    const {case_id} = req.body
+    saveFileLocation(getFileNames(req.files, case_id))
+      .then((count) => {
+        next();
+        return;
+      })
+      .catch((err) => console.log(err));
+  }
+  else {
+    return res.status(200).json({
+      message:"Np update made."
+    })
+  }  
+}
+
 module.exports = {
   reportHandler,
   getUserCases,
-  updateCase
+  updateCase,
+  updateFiles,
 };

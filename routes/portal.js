@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const { isAuthorized } = require('../middleware/authentication')
-const { reportHandler, getUserCases, updateCase } = require('../middleware/utils')
+const { reportHandler, getUserCases, updateCase, updateFiles } = require('../middleware/utils')
 const multer = require('multer')
 const path = require('path')
 
@@ -39,9 +39,17 @@ router.get('/cases', isAuthorized, getUserCases, (req, res) => {
   })
 })
 
+//UPDATING CASE DETAILS
 router.put('/update-case', isAuthorized, updateCase, (req, res) => {
   res.status(200).json({
     message:"Updated!"
+  })
+})
+
+//UPDATE DOCUMENTS UPLOADED
+router.put('/update-files', isAuthorized, upload.array('images'), updateFiles, (req, res) => {
+  res.status(200).json({
+    message:"done!"
   })
 })
 

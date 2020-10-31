@@ -20,6 +20,35 @@ const checkUser = (email, password) => {
   });
 };
 
+const createOfficer = (data) => {
+  return new Promise((resolve, reject) => {
+    pool.query(
+      `INSERT INTO officers (first_name, last_name, email, password, date_of_birth, rank) VALUES ($1, $2, $3, $4, $5, $6)`,
+      data,
+      (err, results) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        }
+        resolve(results);
+      }
+    );
+  });
+};
+
+const checkOfficer = (email, password) => {
+  return new Promise((resolve, reject) => {
+    pool.query(
+      `SELECT email, password FROM officers where email = $1 AND password = $2`,
+      [email, password],
+      (err, results) => {
+        if (err) reject(err);
+        resolve(results);
+      }
+    );
+  });
+};
+
 const allUsers = () => {
   return new Promise((resolve, reject) => {
     pool.query("SELECT * FROM users", (err, results) => {
@@ -177,11 +206,10 @@ const updateProfilePic = (data) => {
 const sqlFormat = (keys) => {
   let sql = "";
   keys.forEach((key, index) => {
-    if(index === keys.length - 1) {
-    sql += key + " =$" + (index + 1).toString() + " ";
-    }
-    else {
-    sql += key + " =$" + (index + 1).toString() + ", ";
+    if (index === keys.length - 1) {
+      sql += key + " =$" + (index + 1).toString() + " ";
+    } else {
+      sql += key + " =$" + (index + 1).toString() + ", ";
     }
   });
   return sql;
@@ -189,16 +217,79 @@ const sqlFormat = (keys) => {
 const updateProfileDetails = (data) => {
   const sql =
     "UPDATE users SET " +
-    sqlFormat(Object.keys(data.object))
-    +"WHERE email=$" +
+    sqlFormat(Object.keys(data.object)) +
+    "WHERE email=$" +
     data.values.length;
-    console.log(sql)
+  console.log(sql);
   return new Promise((resolve, reject) => {
     pool.query(sql, data.values, (err, results) => {
       if (err) reject(err);
       resolve(results);
     });
   });
+};
+
+const getAvailableInvestigators = async () => {
+  try {
+    const res = await pool.query(
+      `SELECT * FROM officers WHERE assigned_case = $1 AND rank = $2`,
+      [false, "investigator"]
+    );
+    return res;
+  } catch (error) {
+    return {
+      error,
+    };
+  }
+};
+
+const getAllPendingCases = async () => {
+  try {
+    const results = await pool.query(`SELECT * FROM cases WHERE assigned_officer = $1`, [''])
+    return results
+  } catch (error) {
+    return err
+  }
+};
+
+const updateCaseInfo = async (officer, case_id) => {
+  try {
+    const res = await pool.query(
+      `
+      UPDATE officers 
+      SET assigned_case = $1,
+      assigned_case_id = $2
+      WHERE email = $3
+    `,
+      officer
+    );
+    const secondRes = await pool.query(
+      `UPDATE cases 
+      SET assigned_officer = $1
+      WHERE case_id = $2`,
+      case_id
+    );
+    return {
+      res,
+      secondRes,
+    };
+  } catch (error) {
+    return {
+      error,
+    };
+  }
+};
+
+const updateCaseStatusById = async (data) => {
+  try {
+    const res = await pool.query(
+      `UPDATE cases SET status = $1 WHERE case_id=$2`,
+      data
+    );
+    return res;
+  } catch (error) {
+    return error;
+  }
 };
 
 module.exports = {
@@ -216,4 +307,10 @@ module.exports = {
   getFileNamesFromDB,
   updateProfilePic,
   updateProfileDetails,
+  checkOfficer,
+  createOfficer,
+  getAvailableInvestigators,
+  updateCaseInfo,
+  updateCaseStatusById,
+  getAllPendingCases,
 };

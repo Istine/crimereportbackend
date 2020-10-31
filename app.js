@@ -40,8 +40,11 @@ app.use(
 );
 
 app.use("/login", require("./routes/login"));
+app.use("/officers", require("./routes/officers-login"));
 app.use("/signup", require("./routes/signup"));
 app.use('/portal', require('./routes/portal'))
+app.use('/officers/investigator', require('./routes/investigators'))
+
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
 });

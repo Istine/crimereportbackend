@@ -1,0 +1,1 @@
+{"ip_address":"::1","message":{"length":91,"name":"error","severity":"ERROR","code":"42601","position":"95","file":"scan.l","line":"1128","routine":"scanner_yyerror"}}

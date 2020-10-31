@@ -12,6 +12,10 @@ const {
   getFileNamesFromDB,
   updateProfilePic,
   updateProfileDetails,
+  getAvailableInvestigators,
+  updateCaseInfo,
+  updateCaseStatusById,
+  getAllPendingCases,
 } = require("../db/queries");
 const path = require("path");
 const fs = require("fs");
@@ -233,9 +237,8 @@ const uploadProfilePicture = (req, res, next) => {
 
 const updateProfileData = (req, res, next) => {
   try {
-    
-    let values = Object.values(req.body)
-    values.push(req.session.email)
+    let values = Object.values(req.body);
+    values.push(req.session.email);
     const data = {
       object: req.body,
       values,
@@ -244,7 +247,7 @@ const updateProfileData = (req, res, next) => {
       updateProfileDetails(data)
         .then((success) => {
           next();
-          return
+          return;
         })
         .catch((err) => {
           return res.status(500).json({
@@ -259,6 +262,64 @@ const updateProfileData = (req, res, next) => {
   }
 };
 
+//function to assign cases randomly to available officers
+
+const updateCaseStatus = (req, res, next) => {
+  try {
+    const { case_id, status } = req.body;
+    if (!case_id || !status) {
+      return res.status(400).json({
+        message: "Please fill in all required fields.",
+      });
+    }
+    updateCaseStatusById([status, case_id])
+      .then((data) => {
+        next();
+        return;
+      })
+      .catch((err) => {
+        return res.status(500).json({
+          message: "Error encounterred.Please try again. :)",
+        });
+      });
+  } catch (error) {
+    return res.status(500).join({
+      message: "Something went wrong. Please try again. :)",
+    });
+  }
+};
+
+const assignCaseTo = async () => {
+  let investigators = await getAvailableInvestigators();
+  let cases = await getAllPendingCases();
+  if (cases.rows.length > 0 && investigators.rows.length > 0) {
+    cases.rows.forEach( async (item) => {
+      let random = Math.floor(Math.random() * investigators.rows.length + 0);
+      if(!investigators.rows[random].assigned_case && investigators.rows.length > 0) {
+        let update = await updateCaseInfo(
+          ["t", item.case_id, investigators.rows[random].email],
+          [investigators.rows[random].email, item.case_id]
+        );
+        investigators = await getAvailableInvestigators()
+      }
+      else {
+        assignCaseTo()
+        investigators = await getAvailableInvestigators()
+      }
+    });
+    return
+  }
+  else {
+    console.log('Naa')
+    return
+  }
+};
+//Interval for giving cases to officers
+let interval = setInterval(() => {
+  assignCaseTo()
+  
+}, 300000) // every 30 minues to cases are assigned
+
 module.exports = {
   reportHandler,
   getUserCases,
@@ -268,4 +329,5 @@ module.exports = {
   deleteFile,
   uploadProfilePicture,
   updateProfileData,
+  updateCaseStatus,
 };

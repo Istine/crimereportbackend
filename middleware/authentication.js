@@ -52,7 +52,7 @@ const validateOfficer = (req, res, next) => {
     if (email && password) {
       checkOfficer(email, encryptPassword(password))
         .then((data) => {
-          if (data.rows) {
+          if (data.rows.length > 0 ) {
             req.user = data.rows;
             req.session.errors = null;
             req.session.email = email;

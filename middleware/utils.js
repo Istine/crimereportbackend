@@ -19,6 +19,7 @@ const {
 } = require("../db/queries");
 const path = require("path");
 const fs = require("fs");
+const { Console } = require("console");
 
 //FUNCTION FOR GETTING FILE NAMES
 const getFileNames = (files, file_id) => {
@@ -292,33 +293,54 @@ const updateCaseStatus = (req, res, next) => {
 const assignCaseTo = async () => {
   let investigators = await getAvailableInvestigators();
   let cases = await getAllPendingCases();
+  console.log(cases.rows.length, investigators.rows.length)
   if (cases.rows.length > 0 && investigators.rows.length > 0) {
-    cases.rows.forEach( async (item) => {
+    cases.rows.forEach(async (item) => {
       let random = Math.floor(Math.random() * investigators.rows.length + 0);
-      if(!investigators.rows[random].assigned_case && investigators.rows.length > 0) {
+      if (
+        !(investigators.rows[random].cases_count >= 4) &&
+        (investigators.rows.length > 0)
+      ) {
+        let arr = "ARRAY" + investigators.rows[random].assigned_case_id === null ? [item.case_id] : [...investigators.rows[random].assigned_case_id, item.case_id]
         let update = await updateCaseInfo(
-          ["t", item.case_id, investigators.rows[random].email],
+          [
+            "t",
+            arr,
+            investigators.rows[random].cases_count + 1,
+            investigators.rows[random].email,
+          ],
           [investigators.rows[random].email, item.case_id]
         );
-        investigators = await getAvailableInvestigators()
-      }
-      else {
-        assignCaseTo()
-        investigators = await getAvailableInvestigators()
+        console.log(update)
+        investigators = await getAvailableInvestigators();
+      } else {
+        investigators = await getAvailableInvestigators();
+        let update = await updateCaseInfo(
+          [
+            "t",
+            "ARRAY" +
+              [...investigators.rows[random].assigned_case_id, item.case_id],
+            Number(investigators.rows[random].cases_count) + 1,
+            investigators.rows[random].email,
+          ],
+          [investigators.rows[random].email, item.case_id]
+        );
       }
     });
-    return
-  }
-  else {
-    console.log('Naa')
-    return
+    return;
+  } else {
+    console.log("naaa");
+    return;
   }
 };
+
 //Interval for giving cases to officers
 let interval = setInterval(() => {
-  assignCaseTo()
-  
-}, 300000) // every 30 minues to cases are assigned
+  assignCaseTo();
+}, 3000); // every 30 minues to cases are assigned
+
+
+//get all cases for particular investigator by id of case assigned
 
 module.exports = {
   reportHandler,

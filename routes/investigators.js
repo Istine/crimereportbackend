@@ -9,6 +9,12 @@ router.get('/portal', isAuthorized, (req, res) =>{
     })
 })
 
+router.get('/all-cases', isAuthorized, (req, res) => {
+    res.status(200).json({
+        message: "Done!"
+    })
+})
+
 router.put('/update-case-status', isAuthorized, updateCaseStatus, (req, res) => {
     res.status(200).json({
         message:"Done!"

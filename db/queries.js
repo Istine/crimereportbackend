@@ -258,8 +258,9 @@ const updateCaseInfo = async (officer, case_id) => {
       `
       UPDATE officers 
       SET assigned_case = $1,
-      assigned_case_id = $2
-      WHERE email = $3
+      assigned_case_id = $2,
+      cases_count = $3
+      WHERE email = $4
     `,
       officer
     );
@@ -291,6 +292,8 @@ const updateCaseStatusById = async (data) => {
     return error;
   }
 };
+
+
 
 module.exports = {
   checkUser,

@@ -291,54 +291,49 @@ const updateCaseStatus = (req, res, next) => {
 };
 
 const assignCaseTo = async () => {
-  let investigators = await getAvailableInvestigators();
-  let cases = await getAllPendingCases();
-  console.log(cases.rows.length, investigators.rows.length)
-  if (cases.rows.length > 0 && investigators.rows.length > 0) {
-    cases.rows.forEach(async (item) => {
-      let random = Math.floor(Math.random() * investigators.rows.length + 0);
-      if (
-        !(investigators.rows[random].cases_count >= 4) &&
-        (investigators.rows.length > 0)
-      ) {
-        let arr = "ARRAY" + investigators.rows[random].assigned_case_id === null ? [item.case_id] : [...investigators.rows[random].assigned_case_id, item.case_id]
-        let update = await updateCaseInfo(
-          [
-            "t",
-            arr,
-            investigators.rows[random].cases_count + 1,
-            investigators.rows[random].email,
-          ],
-          [investigators.rows[random].email, item.case_id]
-        );
-        console.log(update)
-        investigators = await getAvailableInvestigators();
-      } else {
-        investigators = await getAvailableInvestigators();
-        let update = await updateCaseInfo(
-          [
-            "t",
-            "ARRAY" +
-              [...investigators.rows[random].assigned_case_id, item.case_id],
-            Number(investigators.rows[random].cases_count) + 1,
-            investigators.rows[random].email,
-          ],
-          [investigators.rows[random].email, item.case_id]
-        );
-      }
-    });
-    return;
-  } else {
-    console.log("naaa");
-    return;
+  try {
+    let pendingCases = await getAllPendingCases(); //fetch all pending cases
+    pendingCases = pendingCases.rows
+    let officers = await getAvailableInvestigators(); // fetch all available officers
+    officers = officers.rows
+    console.log(officers)
+    let random = Math.floor(Math.random() * officers.length + 0);
+    if(pendingCases.length > 0 ) {
+      pendingCases.forEach(async (value, index) => {
+        if (value.assigned_officer === "empty") {
+          let currentOfficer = officers[random];
+          if (!(currentOfficer.cases_count >= 4)) {
+            //count
+            let count = parseInt(currentOfficer.cases_count + 1);
+            let idArr = [...currentOfficer.assigned_case_id];
+  
+            // add case id to array
+            idArr.push(value.case_id);
+  
+            const response = await updateCaseInfo(
+              [true, idArr, count, currentOfficer.email],
+              [currentOfficer.email, value.case_id]
+            );
+          } else {
+          }
+        }
+        //re-saturate cases and officers
+        pendingCases = await getAllPendingCases();
+        officers = await getAvailableInvestigators();
+      });
+    }
+    else {
+      return
+    }
+  } catch (error) {
+    console.error(error.message);
   }
 };
 
-//Interval for giving cases to officers
-let interval = setInterval(() => {
-  assignCaseTo();
-}, 3000); // every 30 minues to cases are assigned
-
+// //Interval for giving cases to officers
+// let interval = setInterval(() => {
+//   assignCaseTo();
+// }, 3000); // every 30 minues to cases are assigned
 
 //get all cases for particular investigator by id of case assigned
 

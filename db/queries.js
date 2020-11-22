@@ -232,8 +232,8 @@ const updateProfileDetails = (data) => {
 const getAvailableInvestigators = async () => {
   try {
     const res = await pool.query(
-      `SELECT * FROM officers WHERE assigned_case = $1 AND rank = $2`,
-      [false, "investigator"]
+      `SELECT * FROM officers WHERE rank = $1`,
+      ["investigator"]
     );
     return res;
   } catch (error) {
@@ -245,7 +245,7 @@ const getAvailableInvestigators = async () => {
 
 const getAllPendingCases = async () => {
   try {
-    const results = await pool.query(`SELECT * FROM cases WHERE assigned_officer = $1`, [''])
+    const results = await pool.query(`SELECT * FROM cases WHERE assigned_officer = $1`, ['empty'])
     return results
   } catch (error) {
     return err
